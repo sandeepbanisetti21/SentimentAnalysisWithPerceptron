@@ -5,23 +5,22 @@ from collections import defaultdict
 import math
 import sys
 
-#DATA
+# DATA
 TRUE = 'True'
 FAKE = 'Fake'
 POSITVE = 'Pos'
 NEGATIVE = 'Neg'
 
-#FEATURE TYPES
+# FEATURE TYPES
 AUTHENTICITY = 'Authenticity'
 SENTIMENT = 'Sentiment'
 ID = 'id'
 FEATURES = 'features'
 
-#TrainData
+# TrainData
 WEIGHT = 'Weight'
 BIAS = 'Bias'
-ITERATIONS = 100
-
+ITERATIONS = 16
 
 
 def handleStopWords():
@@ -39,7 +38,7 @@ def getFeatures(inputData):
         data[AUTHENTICITY] = words[1]
         data[SENTIMENT] = words[2]
         data[FEATURES] = words[3:]
-        print(data)
+        # pprint(data)
         featureData.append(data)
         featureInfo.extend(words[3:])
     return featureData
@@ -51,31 +50,21 @@ def readFile(filename):
     return inputlines
 
 
-def main():
-    writingData = {}
-    filename = sys.argv[1]
-    inputData = readFile(filename)
-    featureData = getFeatures(inputData)
-    handleStopWords()
-    vanillaModel = doVanillaTraining(featureData)
-    
-
-    writeTofile(vanillaModel,'vanillamodel.txt')    
-
-
 def doVanillaTraining(featureData):
-    vanillaModel ={}
-    vanillaModel[AUTHENTICITY][WEIGHT],vanillaModel[AUTHENTICITY][BIAS] = trainVanilla(
+    authenticity = {}
+    sentiment = {}
+    authenticity[WEIGHT], authenticity[BIAS] = trainVanilla(
         featureData, AUTHENTICITY, TRUE, FAKE, getDefaultTrainData())
-
-    vanillaModel[SENTIMENT][WEIGHT], vanillaModel[SENTIMENT][BIAS] = trainVanilla(
+    sentiment[WEIGHT], sentiment[BIAS] = trainVanilla(
         featureData, SENTIMENT, POSITVE, NEGATIVE, getDefaultTrainData())
-    return vanillaModel
+    return authenticity,sentiment
+
 
 def writeTofile(data, name):
     x = json.dumps(data, ensure_ascii=False)
     with open(name, 'w', encoding='utf-8') as file:
         file.write(x)
+
 
 def getDefaultTrainData():
     trainData = {}
@@ -85,8 +74,8 @@ def getDefaultTrainData():
 
 
 def trainVanilla(featureData, featureType, positiveValue, negativeValue, trainData):
-    weight = trainData['weight']
-    bias = trainData['bias']
+    weight = trainData[WEIGHT]
+    bias = trainData[BIAS]
     for x in range(ITERATIONS):
         for data in featureData:
             fired = computeActivation(data, bias, weight)
@@ -119,6 +108,26 @@ def updateWeightsAndBias(weight, bias, expected, features):
 
     bias = bias + expected
     return weight, bias
+
+
+def main():
+    vanilla = {}
+    filename = sys.argv[1]
+    inputData = readFile(filename)
+    featureData = getFeatures(inputData)
+    handleStopWords()
+    vanilla[AUTHENTICITY], vanilla[SENTIMENT] = doVanillaTraining(featureData)
+    #pprint(vanilla)   
+    writeTofile(vanilla, 'vanillamodel.txt')
+
+def run(fileName):
+    vanilla = {}
+    inputData = readFile(fileName)
+    featureData = getFeatures(inputData)
+    handleStopWords()
+    vanilla[AUTHENTICITY], vanilla[SENTIMENT] = doVanillaTraining(featureData)
+    #pprint(vanilla)   
+    writeTofile(vanilla, 'vanillamodel.txt')
 
 
 if __name__ == '__main__':

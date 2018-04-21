@@ -34,8 +34,9 @@ def classify(featureData,trainingData,positiveClass, negativeClass, featuretype)
     output = {}
     bias = trainingData[BIAS]
     weight = trainingData[WEIGHT]
+    featureInfo = weight.keys()
     for test in featureData:
-        fired = computeActivation(test, bias, weight)
+        fired = computeActivation(test, bias, weight,featureInfo)
         output[test[ID]] = getClassInfo(fired,positiveClass,negativeClass, featuretype)
     return output
 
@@ -51,11 +52,12 @@ def getClassInfo(fired, positiveClass, negativeClass,featureType):
         else:
             return NEGATIVE            
 
-def computeActivation(data, bias, weight):
+def computeActivation(data, bias, weight,featureInfo):
     vectorData = data[FEATURES]
     a = 0
     for x in vectorData:
-        a += weight[x]
+        if x in featureInfo:
+            a += weight[x]
     return a+bias 
 
 
@@ -88,6 +90,17 @@ def main():
     authenticity =  classify(featureData, authenticityData, TRUE, FAKE , AUTHENTICITY)
     sentiment =  classify(featureData, sentimentData, POSITVE, NEGATIVE ,SENTIMENT)
     writeTofile(authenticity,sentiment,featureData)
+
+def run(modelName,testFileName):
+    textData = readData(modelName)
+    authenticityData = extractTrainingData(textData,AUTHENTICITY)
+    sentimentData = extractTrainingData(textData,SENTIMENT)    
+    featureData = extractFeatures(testFileName)
+    authenticity =  classify(featureData, authenticityData, TRUE, FAKE , AUTHENTICITY)
+    sentiment =  classify(featureData, sentimentData, POSITVE, NEGATIVE ,SENTIMENT)
+    writeTofile(authenticity,sentiment,featureData)
+
+
         
 if __name__ == '__main__':
     main()
