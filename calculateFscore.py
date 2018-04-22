@@ -15,7 +15,7 @@ NEGATIVE = 'Neg'
 
 def main():
     perceplearn3.run(sys.argv[1])
-    percepclassify3.run('vanillamodel.txt',sys.argv[2])
+    percepclassify3.run(sys.argv[4],sys.argv[2])
     processOutput()
     processGoldStandard(sys.argv[3])
 
