@@ -4,6 +4,7 @@ from pprint import pprint
 from collections import defaultdict
 import math
 import sys
+from random import shuffle
 
 # DATA
 TRUE = 'True'
@@ -23,12 +24,16 @@ WEIGHT = 'Weight'
 BIAS = 'Bias'
 ITERATIONS = 16
 
-stopwords = ['hers', "it's", 'too', 'who', 'he', "won't", 'then', 'up', 'between', 'ma', 'whom', 'over', 'theirs', 'on', 'just', 'isn', 'while', "don't", 'shan', "shan't", "that'll", 'their', 'does', 'yourself', 'if', 'of', 'to', 'most', 'down', 'off', "doesn't", "you'll", 'such', 's', 'will', 'under', 'its', 'mightn', 'ours', 'not', 'into', 'ourselves', 'me', 'few', 'below', 'own', 'weren', "haven't", "didn't", "aren't", 'the', 'during', 'my', 'a', 've', 'through', 'and', 'can', 'yourselves', 'ain', "wouldn't", "you'd", 'once', 'should', "wasn't", 'above', 'her', 'at', 'she', 'has', 't', 're', 'yours', 'him', "she's", 'have', 'been', 'i', 'themselves', 'so', 'again', 'll', 'with', 'himself', 'there', 'y', 'it', 'his', 'be', 'or',
-             'don', 'each', 'itself', 'that', 'didn', 'until', 'from', 'won', 'being', 'how', 'you', 'now', 'other', 'is', 'some', 'are', 'same', 'very', "hasn't", 'haven', 'o', 'hadn', 'any', 'against', "couldn't", 'this', 'having', 'in', 'shouldn', 'those', 'what', 'because', 'them', 'mustn', "shouldn't", 'was', 'did', 'here', 'all', 'herself', "should've", 'd', "hadn't", "mustn't", "you've", 'doesn', "isn't", 'needn', 'our', 'further', 'were', 'why', "you're", 'nor', 'myself', 'm', 'aren', 'wasn', 'doing', 'these', "needn't", "mightn't", 'by', 'about', 'more', 'only', 'couldn', 'wouldn', 'before', 'they', "weren't", 'where', 'which', 'do', 'when', 'no', 'as', 'an', 'am', 'both', 'hasn', 'had', 'your', 'out', 'than', 'we', 'after', 'for', 'but']
+#stopwords = ['hers', "it's", 'too', 'who', 'he', "won't", 'then', 'up', 'between', 'ma', 'whom', 'over', 'theirs', 'on', 'just', 'isn', 'while', "don't", 'shan', "shan't", "that'll", 'their', 'does', 'yourself', 'if', 'of', 'to', 'most', 'down', 'off', "doesn't", "you'll", 'such', 's', 'will', 'under', 'its', 'mightn', 'ours', 'not', 'into', 'ourselves', 'me', 'few', 'below', 'own', 'weren', "haven't", "didn't", "aren't", 'the', 'during', 'my', 'a', 've', 'through', 'and', 'can', 'yourselves', 'ain', "wouldn't", "you'd", 'once', 'should', "wasn't", 'above', 'her', 'at', 'she', 'has', 't', 're', 'yours', 'him', "she's", 'have', 'been', 'i', 'themselves', 'so', 'again', 'll', 'with', 'himself', 'there', 'y', 'it', 'his', 'be', 'or',
+#             'don', 'each', 'itself', 'that', 'didn', 'until', 'from', 'won', 'being', 'how', 'you', 'now', 'other', 'is', 'some', 'are', 'same', 'very', "hasn't", 'haven', 'o', 'hadn', 'any', 'against', "couldn't", 'this', 'having', 'in', 'shouldn', 'those', 'what', 'because', 'them', 'mustn', "shouldn't", 'was', 'did', 'here', 'all', 'herself', "should've", 'd', "hadn't", "mustn't", "you've", 'doesn', "isn't", 'needn', 'our', 'further', 'were', 'why', "you're", 'nor', 'myself', 'm', 'aren', 'wasn', 'doing', 'these', "needn't", "mightn't", 'by', 'about', 'more', 'only', 'couldn', 'wouldn', 'before', 'they', "weren't", 'where', 'which', 'do', 'when', 'no', 'as', 'an', 'am', 'both', 'hasn', 'had', 'your', 'out', 'than', 'we', 'after', 'for', 'but']
 
+stopwords = []
 
-def handleStopWords():
-    return []
+def handleStopWords(elements):
+    for stopword in stopwords:
+            if stopword in elements:
+                elements.remove(stopword)
+    return elements
 
 
 def getFeatures(inputData):
@@ -41,7 +46,7 @@ def getFeatures(inputData):
         data[ID] = words[0]
         data[AUTHENTICITY] = words[1]
         data[SENTIMENT] = words[2]
-        data[FEATURES] = words[3:]
+        data[FEATURES] = handleStopWords(words[3:])
         # pprint(data)
         featureData.append(data)
         featureInfo.extend(words[3:])
@@ -91,6 +96,7 @@ def trainVanilla(featureData, featureType, positiveValue, negativeValue, trainDa
     weight = trainData[WEIGHT]
     bias = trainData[BIAS]
     for x in range(ITERATIONS):
+        shuffle(featureData)
         for data in featureData:
             fired = computeActivation(data, bias, weight)
             expected = computeExpectedNumericalValue(
@@ -125,8 +131,7 @@ def computeActivation(data, bias, weight):
     vectorData = data[FEATURES]
     a = 0
     for x in vectorData:
-        #if x not in stopwords:
-            a += weight[x]
+        a += weight[x]
     return a+bias
 
 
@@ -147,7 +152,7 @@ def updateWeightsAndBias(weight, bias, expected, features):
 
 def updateCachedWeightsAndBias(cachedWeight, beta, expected, features, count):
     for feature in features:
-        cachedWeight[feature] += expected*count
+         cachedWeight[feature] += expected*count
 
     beta = beta + expected*count
     return cachedWeight, beta
@@ -155,7 +160,7 @@ def updateCachedWeightsAndBias(cachedWeight, beta, expected, features, count):
 
 def calculateAverageWeights(weights, cachedWeights, bias, beta, count):
     inverse = 1/count
-    for key in weights.keys():
+    for key in weights.keys():      
         weights[key] = weights[key] - inverse*cachedWeights[key]
     bias = bias - inverse*beta
     return weights, bias
@@ -167,7 +172,6 @@ def main():
     filename = sys.argv[1]
     inputData = readFile(filename)
     featureData = getFeatures(inputData)
-    handleStopWords()
     vanilla[AUTHENTICITY], vanilla[SENTIMENT] = doVanillaTraining(featureData)
     vanilla[STOPWORDS] = stopwords
     average[AUTHENTICITY], average[SENTIMENT] = doAverageTraining(featureData)
@@ -182,12 +186,10 @@ def run(fileName):
     average = {}
     inputData = readFile(fileName)
     featureData = getFeatures(inputData)
-    handleStopWords()
     vanilla[AUTHENTICITY], vanilla[SENTIMENT] = doVanillaTraining(featureData)
     average[AUTHENTICITY], average[SENTIMENT] = doAverageTraining(featureData)
     #vanilla[STOPWORDS] = stopwords
     #average[STOPWORDS] = stopwords
-    # pprint(vanilla)
     writeTofile(vanilla, 'vanillamodel.txt')
     writeTofile(average, 'averagedmodel.txt')
 

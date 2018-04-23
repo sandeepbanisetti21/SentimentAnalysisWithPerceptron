@@ -13,26 +13,27 @@ FAKE = 'Fake'
 POSITIVE = 'Pos'
 NEGATIVE = 'Neg'
 
-def main():
-    perceplearn3.run(sys.argv[1])
-    percepclassify3.run(sys.argv[4],sys.argv[2])
+def run(learnfile,classifyfile,goldfile,modelfile):
+    perceplearn3.run(learnfile)
+    percepclassify3.run(modelfile,classifyfile)
     processOutput()
-    processGoldStandard(sys.argv[3])
+    processGoldStandard(goldfile)
 
     (a,b,c) = get_performance_measure(trueFake,trueFakeGold,TRUE)
-    process(a,b,c,TRUE)
+    #process(a,b,c,TRUE)
 
     (a1,b1,c1) = get_performance_measure(trueFake,trueFakeGold,TRUE)
-    process(a1,b1,c1,FAKE)
+    #process(a1,b1,c1,FAKE)
 
     (a2,b2,c2) = get_performance_measure(posneg,posnegGold,POSITIVE)
-    process(a2,b2,c2,POSITIVE)
+    #process(a2,b2,c2,POSITIVE)
         
     (a3,b3,c3) = get_performance_measure(posneg,posnegGold,NEGATIVE)
-    process(a3,b3,c3,NEGATIVE)
+    #process(a3,b3,c3,NEGATIVE)
     
     avgval = mean((c,c1,c2,c3))
-    print('average f1 is : {0}'.format(avgval))
+    print('f1 is : {0}'.format(avgval))
+    return avgval
 
 def mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
@@ -79,5 +80,12 @@ def get_performance_measure(prediction, dev_gold, cls):
     f1 = 2/((1/precision) + (1/recall))
     return precision, recall, f1
 
+def main():
+    print('----------------------------Vanilla Modeling--------------------------------')
+    run('data/train-labeled.txt', 'data/dev-text.txt', 'data/dev-key.txt', 'vanillamodel.txt')
+    print('----------------------------Average Modeling--------------------------------')   
+    run('data/train-labeled.txt', 'data/dev-text.txt', 'data/dev-key.txt', 'averagedmodel.txt')
+
 if __name__ == '__main__':
     main()
+
